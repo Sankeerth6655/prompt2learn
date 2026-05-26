@@ -1,3 +1,4 @@
+import { StringSchemaDefinition } from "mongoose";
 import { ai } from "../config/gemini";
 
 type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced'
@@ -42,6 +43,15 @@ type generateContentResponse = {
         url:string,
     }
 }
+
+type askQuestionRequest ={
+    topic:string,
+    subtopic:string,
+    concept:string,
+    difficulty:string,
+    question:string
+}
+
 
 export async function generateTopicService(data:{goal:string,difficulty:string}):Promise<Array<{
     subtopics:{
@@ -100,10 +110,17 @@ export async function generateRoadmapService(data:roadmapRequest):Promise<roadma
             {
             "subtopic": "string",
             "estimatedHours": 0,
-            "concepts": ["string"]
+            "concepts": [
+                {
+            "title":"string",
+            "completed":"boolean"
+            }]
             },
         ],
         }
+
+        make completed in concepts false by default.
+
         Do not return markdown.
         Do not return explanations.
         Do not wrap the response in \`\`\`json.
@@ -126,7 +143,7 @@ export async function generateRoadmapService(data:roadmapRequest):Promise<roadma
 
 
 export async function generateContentService(data:generateContentRequest):Promise<generateContentResponse>{
-    const prompt = `Generate content for the following concept: 
+    const prompt = `Generate content for the following concept:
     topic:${data.topic},
     subtopic:${data.subtopic},
     difficulty:${data.difficulty},
@@ -181,6 +198,38 @@ export async function generateContentService(data:generateContentRequest):Promis
         ?.replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();
+
+    return JSON.parse(cleaned!);
+}
+
+export async function askQuestionService(data:askQuestionRequest):Promise<{answer:string}>{
+    let prompt = `
+        Answer the user's question using the provided topic, subtopic and concept.
+        Keep the answer concise (1-3 sentences).
+        Use simple language appropriate for the difficulty level.
+        topic:${data.topic},
+        subtopic:${data.subtopic},
+        concept:${data.concept},
+        difficulty:${data.difficulty},
+        question:${data.question}
+
+        return valid JSON only in
+        format:
+        {"answer":"string"}
+
+        Do not return markdown.
+        Do not return explanations.
+        Do not wrap the response in \`\`\`json.
+    `;
+
+    const response = await ai.models.generateContent({
+        model:'gemini-2.5-flash-lite',
+        contents:prompt
+    });
+
+    const text = response.text;
+
+    const cleaned = text?.replace(/```json/g,"").replace(/```/g,"").trim();
 
     return JSON.parse(cleaned!);
 }

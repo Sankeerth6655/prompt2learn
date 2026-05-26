@@ -72,3 +72,41 @@ export async function deleteRoadmapService(userId:string,roadmapId:string):Promi
     if(!roadmap) throw new Error("Roadmap not found");
     return {message:"Roadmap deleted successfully"}
 }
+
+//concept complete
+//recalculate progress
+//status update (if 100% update to complete)
+export async function updateRoadmapService(userId:string,roadmapId:string,data:{subtopic:string,concept:string}):Promise<{message:string}>{
+    let roadmapDetails = await Roadmap.findOne({userId,_id:roadmapId}).select('roadmap progress status');
+    if(!roadmapDetails) throw new Error("Roadmap not found!");
+
+    roadmapDetails.roadmap.forEach((r)=>{
+        if(r.subtopic === data.subtopic){
+            r.concepts.forEach((c)=>{
+                if(c.title === data.concept){
+                    c.completed = true;
+                }
+            })
+        }
+    })
+
+    let total = 0;
+    let completed=0;
+
+    roadmapDetails.roadmap.forEach((r)=>{
+        r.concepts.forEach((c)=>{
+            total++;
+            if(c.completed){
+                completed++;
+            }
+        })
+    })
+
+    roadmapDetails.progress = Math.round((completed/total)*100);
+
+    if(roadmapDetails.progress === 100) roadmapDetails.status = "COMPLETED";
+
+    await roadmapDetails.save();
+
+    return {message:"Roadmap updated successfully"};
+}
