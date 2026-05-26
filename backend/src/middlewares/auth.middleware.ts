@@ -23,12 +23,14 @@ export async function protectedRoute(req:AuthRequest,res:Response,next:NextFunct
             return;
         }
 
-        const decoded = jwt.verify(token!,process.env.JWT_SECRET!) as JwtPayload;
+        
+        const decoded = jwt.verify(token!,process.env.JWT_SECRET as string) as JwtPayload;
         req.userId = decoded.userId;
         
         next();
 
     } catch (error) {
+        console.log(error);
         res.status(401).json({message:"Unauthorized access!"});
     }
 }

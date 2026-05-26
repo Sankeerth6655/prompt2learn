@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/user.model"
 import  jwt  from "jsonwebtoken";
+import { StringSchemaDefinition } from "mongoose";
 
 type userInput = {
     name:string,
@@ -48,5 +49,21 @@ export async function loginService(data:{email:string,password:string}):Promise<
         userId:user._id.toString(),
         name:user.name,
         email:user.email,
+    }}
+}
+
+//get current user
+export async function getCurrentUserService(userId:string):Promise<{message:string,user:{
+    userId:string,
+    name:string,
+    email:string
+}}>{
+    const user = await User.findById(userId).select('-password').lean();
+    if(!user) throw new Error("User not found");
+
+    return {message:"User fetched successfully",user:{
+        userId:user._id.toString(),
+        name:user.name,
+        email:user.email
     }}
 }
