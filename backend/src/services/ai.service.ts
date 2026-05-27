@@ -53,7 +53,7 @@ type askQuestionRequest ={
 }
 
 
-export async function generateTopicService(data:{goal:string,difficulty:string}):Promise<Array<{
+export async function generateTopicService(data:{topic:string,difficulty:string}):Promise<Array<{
     subtopics:{
         title:string,
         description:string
@@ -61,10 +61,10 @@ export async function generateTopicService(data:{goal:string,difficulty:string})
 }>>{
 
     const prompt = `Generate learning topics for:
-        Goal:${data.goal},
+        topic:${data.topic},
         Difficulty:${data.difficulty},
         return only valid JSON.
-        format : 
+        format :
         {
             subtopics:[
                 {
@@ -86,8 +86,6 @@ export async function generateTopicService(data:{goal:string,difficulty:string})
 
     const text = response.text;
 
-    console.log("Generated Text :: ",text);
-
     const cleaned = text
         ?.replace(/```json/g, "")
         .replace(/```/g, "")
@@ -96,9 +94,7 @@ export async function generateTopicService(data:{goal:string,difficulty:string})
     return JSON.parse(cleaned!);
 }
 
-
 export async function generateRoadmapService(data:roadmapRequest):Promise<roadmapResponse>{
-
     const prompt = `Generate roadmap for:
     topic: ${data.topic},
     difficulty: ${data.difficulty},
