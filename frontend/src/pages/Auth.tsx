@@ -1,9 +1,48 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { BookOpen, Brain, Eye, EyeOff } from "lucide-react";
+import Logo from "../components/Logo";
+import { toast } from "react-toastify";
+import { authApi, useLoginMutation, useRegisterMutation } from "../redux/features/authApi";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [login] = useLoginMutation();
+  const [register] = useRegisterMutation();
+  const navigate = useNavigate();
+
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [name,setName] = useState("");
+
+  const dispatch = useDispatch();
+
+  const handleSubmit = async (e:FormEvent)=>{
+    e.preventDefault();
+    if(isLogin){
+      try {
+        const response = await login({email,password}).unwrap();
+        toast.success(response.message);
+        localStorage.setItem("token",response.token);
+        dispatch(authApi.util.resetApiState());
+        navigate('/');
+      } catch (error) {
+        toast.error("Error in login form");
+      }
+    }
+
+    else{
+      try {
+        const response = await register({name,email,password}).unwrap();
+        toast.success(response.message);
+        setIsLogin(!isLogin);
+      } catch (error) {
+        toast.error("Error in register form");
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#D1D1D1] flex items-center justify-center p-4">
@@ -17,11 +56,12 @@ export default function Auth() {
               AI Ready
             </div>
 
-            <h1 className="mt-5 text-3xl font-semibold tracking-tight">
-              Prompt2Learn
-            </h1>
+            <div className="mt-6 scale-200 origin-left">
+              <Logo />
+            </div>
+            
 
-            <p className="mt-3 max-w-sm text-sm leading-6 text-[#8A8A8A]">
+            <p className="mt-6 max-w-sm text-sm leading-6 text-[#8A8A8A]">
               Generate personalized learning roadmaps, study concepts with AI,
               track progress and learn faster with your personal AI tutor.
             </p>
@@ -94,7 +134,10 @@ export default function Auth() {
               </p>
             </div>
 
-            <div className="space-y-5">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-5"
+            >
               {!isLogin && (
                 <div>
                   <label className="mb-2 block text-sm text-[#8A8A8A]">
@@ -104,7 +147,20 @@ export default function Auth() {
                   <input
                     type="text"
                     placeholder="John Doe"
-                    className="h-10 w-full rounded-xl border border-[#1A1A1C] bg-[#0D0D0F] px-4 text-sm outline-none transition-all placeholder:text-[#303030] focus:border-[rgba(220,38,38,0.30)]"
+                    className="
+                      h-10
+                      w-full
+                      rounded-xl
+                      border border-[#1A1A1C]
+                      bg-[#0D0D0F]
+                      px-4
+                      text-sm
+                      outline-none
+                      transition-all
+                      placeholder:text-[#303030]
+                      focus:border-[rgba(220,38,38,0.30)]
+                    "
+                    onChange={(e)=>setName(e.target.value)}
                   />
                 </div>
               )}
@@ -117,7 +173,20 @@ export default function Auth() {
                 <input
                   type="email"
                   placeholder="john@example.com"
-                  className="h-10 w-full rounded-xl border border-[#1A1A1C] bg-[#0D0D0F] px-4 text-sm outline-none transition-all placeholder:text-[#303030] focus:border-[rgba(220,38,38,0.30)]"
+                  className="
+                    h-10
+                    w-full
+                    rounded-xl
+                    border border-[#1A1A1C]
+                    bg-[#0D0D0F]
+                    px-4
+                    text-sm
+                    outline-none
+                    transition-all
+                    placeholder:text-[#303030]
+                    focus:border-[rgba(220,38,38,0.30)]
+                  "
+                  onChange={(e)=>setEmail(e.target.value)}
                 />
               </div>
 
@@ -128,15 +197,42 @@ export default function Auth() {
 
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={
+                      showPassword
+                        ? "text"
+                        : "password"
+                    }
                     placeholder="••••••••"
-                    className="h-10 w-full rounded-xl border border-[#1A1A1C] bg-[#0D0D0F] px-4 pr-12 text-sm outline-none transition-all placeholder:text-[#303030] focus:border-[rgba(220,38,38,0.30)]"
+                    className="
+                      h-10
+                      w-full
+                      rounded-xl
+                      border border-[#1A1A1C]
+                      bg-[#0D0D0F]
+                      px-4
+                      pr-12
+                      text-sm
+                      outline-none
+                      transition-all
+                      placeholder:text-[#303030]
+                      focus:border-[rgba(220,38,38,0.30)]
+                    "
+                    onChange={(e)=>setPassword(e.target.value)}
                   />
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A8A8A] hover:text-[#D1D1D1]"
+                    onClick={() =>
+                      setShowPassword(
+                        !showPassword
+                      )
+                    }
+                    className="
+                      absolute right-4 top-1/2
+                      -translate-y-1/2
+                      text-[#8A8A8A]
+                      hover:text-[#D1D1D1]
+                    "
                   >
                     {showPassword ? (
                       <EyeOff size={16} />
@@ -149,13 +245,21 @@ export default function Auth() {
 
               {isLogin && (
                 <div className="flex justify-end">
-                  <button className="text-xs text-[#8A8A8A] hover:text-[#D1D1D1]">
+                  <button
+                    type="button"
+                    className="
+                      text-xs
+                      text-[#8A8A8A]
+                      hover:text-[#D1D1D1]
+                    "
+                  >
                     Forgot Password?
                   </button>
                 </div>
               )}
 
               <button
+                type="submit"
                 className="
                   w-full
                   rounded-xl
@@ -171,7 +275,9 @@ export default function Auth() {
                   hover:bg-[rgba(220,38,38,0.14)]
                 "
               >
-                {isLogin ? "Login" : "Create Account"}
+                {isLogin
+                  ? "Login"
+                  : "Create Account"}
               </button>
 
               <p className="text-center text-sm text-[#8A8A8A]">
@@ -180,13 +286,26 @@ export default function Auth() {
                   : "Already have an account?"}
 
                 <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="ml-2 text-[rgba(220,38,38,0.70)] hover:text-[#DC2626]"
+                  type="button"
+                  onClick={() =>{
+                    setIsLogin(!isLogin);
+                    setName(""),
+                    setEmail("");
+                    setPassword("");
+                  }
+                  }
+                  className="
+                    ml-2
+                    text-[rgba(220,38,38,0.70)]
+                    hover:text-[#DC2626]
+                  "
                 >
-                  {isLogin ? "Register" : "Login"}
+                  {isLogin
+                    ? "Register"
+                    : "Login"}
                 </button>
               </p>
-            </div>
+            </form>
           </div>
         </div>
       </div>

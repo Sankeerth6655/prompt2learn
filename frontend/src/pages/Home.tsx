@@ -6,8 +6,11 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const isAuthenticated = !!localStorage.getItem("token");
+  const navigate = useNavigate();
   const features = [
     {
       title: "Personalized Roadmaps",
@@ -94,6 +97,9 @@ export default function Home() {
                 hover:border-[rgba(220,38,38,0.30)]
                 hover:bg-[rgba(220,38,38,0.14)]
             "
+            onClick={()=>{
+              isAuthenticated?navigate('/dashboard'):navigate("/auth")
+            }}
             >
             Get Started
             </button>

@@ -5,74 +5,36 @@ import {
   Clock3,
   BookOpen,
 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useCreateRoadmapMutation } from "../redux/features/roadmapApi";
+import { toast } from "react-toastify";
 
 export default function RoadmapPreview() {
   const [expanded, setExpanded] = useState<number | null>(0);
 
-  const roadmap = {
-    topic: "Backend Developer",
-    difficulty: "Intermediate",
-    estimatedDays: 90,
+  const location = useLocation();
+  const roadmap = location.state?.roadmap;
 
-    roadmap: [
-      {
-        subtopic: "Node.js",
-        estimatedHours: 20,
+  const [createRoadmap ]= useCreateRoadmapMutation();
 
-        concepts: [
-          "Introduction to Node.js",
-          "Event Loop",
-          "Modules",
-          "File System",
-          "Streams",
-          "NPM",
-        ],
-      },
+  const navigate = useNavigate();
+  
 
-      {
-        subtopic: "Express.js",
-        estimatedHours: 15,
 
-        concepts: [
-          "Routing",
-          "Middleware",
-          "Controllers",
-          "REST APIs",
-          "Error Handling",
-        ],
-      },
-
-      {
-        subtopic: "MongoDB",
-        estimatedHours: 18,
-
-        concepts: [
-          "Collections",
-          "Documents",
-          "CRUD Operations",
-          "Indexes",
-          "Aggregation Pipeline",
-        ],
-      },
-
-      {
-        subtopic: "Authentication",
-        estimatedHours: 12,
-
-        concepts: [
-          "JWT",
-          "Password Hashing",
-          "Authorization",
-          "Refresh Tokens",
-        ],
-      },
-    ],
-  };
-
-  const totalConcepts = roadmap.roadmap.reduce(
-    (sum, item) => sum + item.concepts.length,
+  const totalConcepts = roadmap?.roadmap.reduce(
+    (sum:any, item:any) => sum + item.concepts.length,
     0
   );
+
+  const handleConfirmAndSaveRoadmap = async ()=>{
+    try {
+      await createRoadmap(roadmap);
+      toast.success("Roadmap Saved Successfully");
+      navigate('/dashboard');
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#D1D1D1]">
@@ -81,7 +43,7 @@ export default function RoadmapPreview() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-white">
-            {roadmap.topic}
+            {roadmap?.topic}
           </h1>
 
           <p className="mt-1 text-sm text-[#8A8A8A]">
@@ -100,7 +62,7 @@ export default function RoadmapPreview() {
               "
             >
               <Clock3 size={14} />
-              {roadmap.estimatedDays} Days
+              {roadmap?.estimatedDays} Days
             </div>
 
             <div
@@ -113,7 +75,7 @@ export default function RoadmapPreview() {
                 text-sm
               "
             >
-              {roadmap.difficulty}
+              {roadmap?.difficulty}
             </div>
           </div>
         </div>
@@ -128,7 +90,7 @@ export default function RoadmapPreview() {
             bg-[#111113]
           "
         >
-          {roadmap.roadmap.map((item, index) => {
+          {roadmap?.roadmap.map((item:any, index:any) => {
             const isOpen = expanded === index;
 
             return (
@@ -188,7 +150,7 @@ export default function RoadmapPreview() {
 
                     <div className="space-y-2">
                       {item.concepts.map(
-                        (concept, idx) => (
+                        (concept:{title:string,_id:string,completed:boolean}, idx:number) => (
                           <div
                             key={idx}
                             className="
@@ -200,7 +162,7 @@ export default function RoadmapPreview() {
                               text-[#D1D1D1]
                             "
                           >
-                            • {concept}
+                            • {concept.title}
                           </div>
                         )
                       )}
@@ -229,7 +191,7 @@ export default function RoadmapPreview() {
               </p>
 
               <p className="mt-1 text-lg font-semibold text-white">
-                {roadmap.roadmap.length}
+                {roadmap?.roadmap.length}
               </p>
             </div>
 
@@ -249,14 +211,14 @@ export default function RoadmapPreview() {
               </p>
 
               <p className="mt-1 text-lg font-semibold text-white">
-                {roadmap.estimatedDays} Days
+                {roadmap?.estimatedDays} Days
               </p>
             </div>
           </div>
         </div>
 
         {/* Confirm */}
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex gap-3 justify-end">
           <button
             className="
               w-full sm:w-auto
@@ -271,6 +233,25 @@ export default function RoadmapPreview() {
               hover:border-[rgba(220,38,38,0.30)]
               hover:bg-[rgba(220,38,38,0.14)]
             "
+            onClick={()=>{navigate('/create-roadmap')}}
+          >
+            Cancel
+          </button>
+          <button
+            className="
+              w-full sm:w-auto
+              rounded-xl
+              border border-[rgba(220,38,38,0.20)]
+              bg-[rgba(220,38,38,0.10)]
+              px-6 py-3
+              text-sm
+              font-medium
+              text-[#D1D1D1]
+              transition-all
+              hover:border-[rgba(220,38,38,0.30)]
+              hover:bg-[rgba(220,38,38,0.14)]
+            "
+            onClick={handleConfirmAndSaveRoadmap}
           >
             Confirm & Save Roadmap
           </button>

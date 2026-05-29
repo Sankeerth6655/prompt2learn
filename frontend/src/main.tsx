@@ -10,6 +10,10 @@ import Dashboard from './pages/Dashboard.tsx';
 import GenerateRoadmap from './pages/GenerateRoadmap.tsx';
 import Learning from './pages/Learning.tsx';
 import RoadmapPreview from './pages/RoadmapPreview.tsx';
+import { ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+import { Provider } from 'react-redux';
+import { store } from './redux/store.ts';
 
 const router = createBrowserRouter([
   {
@@ -25,7 +29,7 @@ const router = createBrowserRouter([
     element:<AuthLayout></AuthLayout>,
     children:[
       {
-        path:'/login',
+        path:'/auth',
         element:<Auth></Auth>
       },
     ]
@@ -34,7 +38,7 @@ const router = createBrowserRouter([
     element:<ProtectedLayout></ProtectedLayout>,
     children:[
       {
-        path:'dashboard',
+        path:'/dashboard',
         element:<Dashboard></Dashboard>
       },
       {
@@ -42,7 +46,7 @@ const router = createBrowserRouter([
         element:<GenerateRoadmap></GenerateRoadmap>
       },
       {
-        path:'/learning',
+        path:'/learning/:roadmapId',
         element:<Learning></Learning>
       },
       {
@@ -55,5 +59,21 @@ const router = createBrowserRouter([
 
 
 createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router}></RouterProvider>
+  <>
+    <Provider store={store}>
+    <RouterProvider router={router}></RouterProvider>
+    </Provider>
+    <ToastContainer
+      position="top-right"
+      autoClose={1500}
+      hideProgressBar
+      newestOnTop
+      pauseOnHover={false}
+      closeButton={false}
+      pauseOnFocusLoss={false}
+      draggable={false}
+      theme="dark"
+      toastClassName="custom-toast"
+    />
+  </>
 );

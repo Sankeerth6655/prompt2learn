@@ -1,19 +1,32 @@
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Menu, User, X } from "lucide-react";
 import Logo from "./Logo";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi, useGetCurrentUserQuery } from "../redux/features/authApi";
+import { useDispatch } from "react-redux";
 
-interface NavbarProps {
-  isAuthenticated?: boolean;
-}
 
-export default function Navbar({
-  isAuthenticated = true,
-}: NavbarProps) {
+
+export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  let navigate = useNavigate();
+
+ const isAuthenticated = !!localStorage.getItem("token");
+
   const profileRef = useRef<HTMLDivElement>(null);
   const mobileRef = useRef<HTMLDivElement>(null);
+
+  const dispatch = useDispatch();
+
+  const handleLogout = ()=>{
+    localStorage.removeItem("token");
+    dispatch(authApi.util.resetApiState());
+    navigate('/');
+  }
+  
+  const {data} = useGetCurrentUserQuery();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -41,35 +54,22 @@ export default function Navbar({
       );
   }, []);
 
-  const navLinks = [
-    "Home",
-    "Dashboard",
-    // "My Roadmaps",
-    // "Create Roadmap",
-  ];
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#1A1A1C] bg-[#0D0D0F]/95 backdrop-blur">
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Logo */}
+        <div className="cursor-pointer" onClick={()=>navigate('/')}>
         <Logo />
+        </div>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <button
-              key={link}
-              className="
-                text-sm
-                text-[#D1D1D1]
-                transition-colors
-                hover:text-white
-              "
-            >
-              {link}
-            </button>
-          ))}
+          
+            <Link to ='/' className="text-sm text-[#D1D1D1] transition-colors hover:text-white">Home</Link>
+            { isAuthenticated && <Link to='/dashboard' className="text-sm text-[#D1D1D1] transition-colors hover:text-white">Dashboard</Link>}
+          
         </div>
 
         {/* Desktop Right */}
@@ -136,11 +136,11 @@ export default function Navbar({
                       </div>
 
                       <h3 className="text-sm font-medium text-[#D1D1D1]">
-                        Navaneeth
+                        {data?.user.name}
                       </h3>
 
                       <p className="mt-1 text-xs text-[#8A8A8A]">
-                        navaneeth@example.com
+                        {data?.user.email}
                       </p>
                     </div>
                   </div>
@@ -159,6 +159,7 @@ export default function Navbar({
                         hover:border-[rgba(220,38,38,0.20)]
                         hover:bg-[rgba(220,38,38,0.06)]
                       "
+                      onClick={handleLogout}
                     >
                       <LogOut size={16} />
                       Logout
@@ -168,7 +169,7 @@ export default function Navbar({
               )}
             </>
           ) : (
-            <button
+            <Link to='/auth'
               className="
                 rounded-xl
                 border border-[rgba(220,38,38,0.20)]
@@ -181,7 +182,7 @@ export default function Navbar({
               "
             >
               Sign In
-            </button>
+            </Link>
           )}
         </div>
 
@@ -235,20 +236,18 @@ export default function Navbar({
 
                   <div>
                     <h3 className="text-sm font-medium text-[#D1D1D1]">
-                      Navaneeth
+                      {data?.user.name}
                     </h3>
 
                     <p className="text-xs text-[#8A8A8A]">
-                      navaneeth@example.com
+                      {data?.user.email}
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="p-2">
-                {navLinks.map((link) => (
                   <button
-                    key={link}
                     className="
                       flex w-full items-center
                       rounded-xl
@@ -260,9 +259,22 @@ export default function Navbar({
                       hover:text-white
                     "
                   >
-                    {link}
+                    Home
                   </button>
-                ))}
+                  <button
+                    className="
+                      flex w-full items-center
+                      rounded-xl
+                      px-3 py-2.5
+                      text-left text-sm
+                      text-[#D1D1D1]
+                      transition-all
+                      hover:bg-[rgba(220,38,38,0.08)]
+                      hover:text-white
+                    "
+                  >
+                    Dashboard
+                  </button>
               </div>
 
               <div className="border-t border-[#1A1A1C] p-2">
@@ -276,6 +288,7 @@ export default function Navbar({
                     transition-all
                     hover:bg-[rgba(220,38,38,0.08)]
                   "
+                  onClick={handleLogout}
                 >
                   <LogOut size={16} />
                   Logout

@@ -1,0 +1,51 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Background -->
+  <rect width="64" height="64" rx="18" fill="#0D0D0F"/>
+
+  <!-- Inner Glow Box -->
+  <rect
+    x="10"
+    y="10"
+    width="44"
+    height="44"
+    rx="14"
+    fill="rgba(220,38,38,0.08)"
+    stroke="rgba(220,38,38,0.18)"
+    stroke-width="2"
+  />
+
+  <!-- lowercase p -->
+  <path
+    d="M17 25V45"
+    stroke="#FFFFFF"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M17 25H23C25.7614 25 28 27.2386 28 30C28 32.7614 25.7614 35 23 35H17"
+    stroke="#FFFFFF"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- 2 -->
+  <path
+    d="M32 29C32 26.7909 33.7909 25 36 25H38C40.2091 25 42 26.7909 42 29C42 30.8 40.8 32 39 33.2L33 38H42"
+    stroke="#DC2626"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- lowercase l -->
+  <path
+    d="M48 23V41"
+    stroke="#FFFFFF"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+</svg>

@@ -6,80 +6,73 @@ import {
   Circle,
   Send,
 } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { useGetRoadmapByIdQuery, useUpdateRoadmapMutation } from "../redux/features/roadmapApi";
+import { useAiAskMutation, useGenerateContentMutation } from "../redux/features/aiApi";
+
+
+
 
 export default function Learning() {
   const [expanded, setExpanded] = useState<number[]>([0]);
 
-  const [selectedConcept, setSelectedConcept] =
-    useState("Event Loop");
 
   const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState(""); 
 
-  const [answer, setAnswer] = useState("");
+  const {roadmapId} = useParams();
 
-  const roadmap = [
-    {
-      subtopic: "Node.js",
+  const [selectedConcept,setSelectedConcept] = useState("");
+  const [selectedSubtopic,setSelectedSubtopic] = useState("");
 
-      concepts: [
-        {
-          title: "Introduction to Node.js",
-          completed: true,
-        },
-        {
-          title: "Event Loop",
-          completed: false,
-        },
-        {
-          title: "Modules",
-          completed: false,
-        },
-        {
-          title: "Streams",
-          completed: false,
-        },
-      ],
-    },
+  const [updateRoadmap] = useUpdateRoadmapMutation();
 
-    {
-      subtopic: "Express.js",
+  const [aiAsk,{isLoading:askAiLoading}] = useAiAskMutation();
+  
+  const {data,refetch} = useGetRoadmapByIdQuery(roadmapId);
+  const roadmap = data?.roadmap;
 
-      concepts: [
-        {
-          title: "Routing",
-          completed: false,
-        },
-        {
-          title: "Middleware",
-          completed: false,
-        },
-        {
-          title: "Controllers",
-          completed: false,
-        },
-      ],
-    },
+  const [generateContent,{isLoading:generateContentLoading}] = useGenerateContentMutation();
+  const [content,setContent] = useState<{
+        title:string,
+        theory:string,
+        examples:{
+            title:string,
+            code:string,
+            explanation:string,
+        }[],
+        keypoints:string[],
+        references:{
+            title:string,
+            url:string,
+        }
+    }>();
 
-    {
-      subtopic: "MongoDB",
+  const handleSelectedConcept = async (data:{topic:string,difficulty:string,subtopic:string,concept:string})=>{
+    try {
+      let response = await generateContent(data).unwrap();
+      setContent(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-      concepts: [
-        {
-          title: "Collections",
-          completed: false,
-        },
-        {
-          title: "CRUD Operations",
-          completed: false,
-        },
-      ],
-    },
-  ];
+  const handleMarkComplete = async ()=>{
+    try {
+      await updateRoadmap({roadmapId:roadmapId!,data:{subtopic:selectedSubtopic,concept:selectedConcept}}).unwrap();
+      refetch();
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-  function askAI() {
-    setAnswer(
-      "The Event Loop is the mechanism that allows Node.js to perform non-blocking operations by delegating tasks to the system kernel whenever possible."
-    );
+  const askAI = async ()=>{ //topic subtopic concept difficulty question
+    try {
+      let response = await aiAsk({topic:data?.topic,subtopic:selectedSubtopic,difficulty:data?.difficulty,concept:selectedConcept,question:question}).unwrap();
+      setAnswer(response.answer);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function toggleSubtopic(index: number) {
@@ -99,7 +92,7 @@ export default function Learning() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-semibold text-white">
-            Backend Developer
+            {data?.topic}
           </h1>
 
           <p className="mt-1 text-sm text-[#8A8A8A]">
@@ -131,8 +124,8 @@ export default function Learning() {
                 </h2>
               </div>
 
-              {roadmap.map(
-                (subtopic, subtopicIndex) => {
+              {roadmap?.map(
+                (subtopic:any, subtopicIndex:number) => {
                   const isOpen =
                     expanded.includes(subtopicIndex);
 
@@ -163,7 +156,6 @@ export default function Learning() {
                           ) : (
                             <ChevronRight size={16} />
                           )}
-
                           <span className="text-sm">
                             {subtopic.subtopic}
                           </span>
@@ -174,20 +166,21 @@ export default function Learning() {
                       {isOpen && (
                         <div className="pb-2">
                           {subtopic.concepts.map(
-                            (concept) => (
+                            (concept:{title:string,completed:boolean}) => (
                               <button
                                 key={concept.title}
-                                onClick={() =>
-                                  setSelectedConcept(
-                                    concept.title
-                                  )
+                                onClick={() =>{
+                                  setSelectedConcept(concept.title);
+                                  setSelectedSubtopic(subtopic.subtopic);
+                                  setContent(undefined);
+                                  handleSelectedConcept({topic:data?.topic,difficulty:data.difficulty,subtopic:subtopic.subtopic,concept:concept.title});
+                                }
                                 }
                                 className={`
                                   flex w-full items-center gap-3
                                   px-6 py-2.5
                                   text-left text-sm
                                   transition-all
-
                                   ${
                                     selectedConcept ===
                                     concept.title
@@ -196,17 +189,19 @@ export default function Learning() {
                                   }
                                 `}
                               >
-                                {concept.completed ? (
-                                  <CheckCircle2
-                                    size={16}
-                                    className="text-[#DC2626]"
-                                  />
-                                ) : (
-                                  <Circle
-                                    size={16}
-                                    className="text-[#8A8A8A]"
-                                  />
-                                )}
+                                <div className="flex h-4 w-4 items-center justify-center shrink-0">
+                                  {concept.completed ? (
+                                    <CheckCircle2
+                                      size={16}
+                                      className="text-[#DC2626]"
+                                    />
+                                  ) : (
+                                    <Circle
+                                      size={16}
+                                      className="text-[#8A8A8A]"
+                                    />
+                                  )}
+                                </div>
 
                                 <span>
                                   {concept.title}
@@ -224,18 +219,70 @@ export default function Learning() {
           </div>
 
           {/* Content */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div
               className="
                 rounded-2xl
                 border border-[#1A1A1C]
                 bg-[#111113]
                 p-5
+                min-h-[650px]
               "
             >
+            {
+              !content && !generateContentLoading ? (
+
+                <div
+                  className="
+                    flex
+                    min-h-[550px]
+                    items-center
+                    justify-center
+                  "
+                >
+                  <div className="text-center">
+                    <h2 className="text-lg font-medium text-white">
+                      Select a Concept
+                    </h2>
+
+                    <p className="mt-2 text-sm text-[#8A8A8A]">
+                      Choose a concept from the roadmap
+                      to generate learning content.
+                    </p>
+                  </div>
+                </div>
+
+              ) : generateContentLoading ? (
+
+                <div
+                  className="
+                    flex
+                    min-h-[550px]
+                    items-center
+                    justify-center
+                  "
+                >
+                  <p
+                    className="
+                      text-lg
+                      text-[#8A8A8A]
+                    "
+                  >
+                    Generating concept...
+                  </p>
+                </div>
+              ):(
+              <div
+                className="
+                  rounded-2xl
+                  border border-[#1A1A1C]
+                  bg-[#111113]
+                  p-5
+                "
+              >
               {/* Concept Title */}
               <h2 className="text-xl font-semibold text-white">
-                {selectedConcept}
+                {content?.title}
               </h2>
 
               {/* Theory */}
@@ -244,13 +291,18 @@ export default function Learning() {
                   Theory
                 </h3>
 
-                <p className="mt-3 text-sm leading-7 text-[#8A8A8A]">
-                  The Event Loop is a fundamental
-                  concept in Node.js. It enables
-                  asynchronous execution by managing
-                  callback queues and ensuring that
-                  long-running operations do not block
-                  the main execution thread.
+                <p
+                  className="
+                    mt-3
+                    text-sm
+                    leading-7
+                    text-[#8A8A8A]
+                    whitespace-pre-wrap
+                    break-words
+                    overflow-hidden
+                  "
+                >
+                  {content?.theory}
                 </p>
               </section>
 
@@ -270,15 +322,69 @@ export default function Learning() {
                     p-4
                   "
                 >
-                  <pre className="text-sm text-[#D1D1D1]">
-{`console.log("Start");
+                  <section className="mt-8">
+                    <h3 className="text-sm font-medium text-white">
+                      Examples
+                    </h3>
 
-setTimeout(() => {
-  console.log("Async");
-}, 0);
+                    <div className="mt-4 space-y-5">
+                      {content?.examples?.map((example, index) => (
+                        <div
+                          key={index}
+                          className="
+                            rounded-xl
+                            border border-[#1A1A1C]
+                            bg-[#0D0D0F]
+                            p-4
+                          "
+                        >
+                          <h4
+                            className="
+                              text-sm
+                              font-medium
+                              text-white
+                            "
+                          >
+                            {example.title}
+                          </h4>
 
-console.log("End");`}
-                  </pre>
+                          <div
+                            className="
+                              mt-3
+                              overflow-x-auto
+                              rounded-lg
+                              border border-[#1A1A1C]
+                              bg-[#090909]
+                              p-4
+                            "
+                          >
+                            <pre
+                              className="
+                                whitespace-pre-wrap
+                                break-words
+                                text-sm
+                                text-[#D1D1D1]
+                              "
+                            >
+                              <code>{example.code}</code>
+                            </pre>
+                          </div>
+
+                          <p
+                            className="
+                              mt-3
+                              text-sm
+                              leading-6
+                              text-[#8A8A8A]
+                              break-words
+                            "
+                          >
+                            {example.explanation}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 </div>
               </section>
 
@@ -289,10 +395,15 @@ console.log("End");`}
                 </h3>
 
                 <ul className="mt-3 space-y-2 text-sm text-[#8A8A8A]">
-                  <li>• Enables non-blocking I/O</li>
-                  <li>• Uses callback queues</li>
-                  <li>• Central to Node.js performance</li>
-                  <li>• Executes tasks asynchronously</li>
+                  {
+                    content?.keypoints?.map(
+                      (keypoint, index) => (
+                        <li key={index}>
+                          • {keypoint}
+                        </li>
+                      )
+                    )
+                  }
                 </ul>
               </section>
 
@@ -302,7 +413,7 @@ console.log("End");`}
                   Ask AI
                 </h3>
 
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <input
                     value={question}
                     onChange={(e) =>
@@ -310,15 +421,18 @@ console.log("End");`}
                     }
                     placeholder="Ask anything about this concept..."
                     className="
-                      h-10
+                      min-h-[48px]
+                      w-full
                       flex-1
                       rounded-xl
                       border border-[#1A1A1C]
                       bg-[#0D0D0F]
                       px-4
                       text-sm
+                      text-[#D1D1D1]
                       outline-none
                       placeholder:text-[#303030]
+                      transition-all
                       focus:border-[rgba(220,38,38,0.30)]
                     "
                   />
@@ -326,15 +440,17 @@ console.log("End");`}
                   <button
                     onClick={askAI}
                     className="
-                      flex items-center justify-center gap-2
+                      self-start
+                      inline-flex min-h-[48px] w-fit items-center justify-center gap-2
                       rounded-xl
                       border border-[rgba(220,38,38,0.20)]
                       bg-[rgba(220,38,38,0.10)]
-                      px-5 py-2.5
+                      px-5
                       text-sm
                       transition-all
                       hover:border-[rgba(220,38,38,0.30)]
                       hover:bg-[rgba(220,38,38,0.14)]
+                      sm:w-auto
                     "
                   >
                     <Send size={15} />
@@ -342,7 +458,21 @@ console.log("End");`}
                   </button>
                 </div>
 
-                {answer && (
+                {askAiLoading && !answer ? (
+                  <div
+                    className="
+                      mt-4
+                      rounded-xl
+                      border border-[#1A1A1C]
+                      bg-[#0D0D0F]
+                      p-4
+                    "
+                  >
+                    <p className="text-sm text-[#D1D1D1]">
+                      Loading...
+                    </p>
+                  </div>
+                ):(
                   <div
                     className="
                       mt-4
@@ -363,7 +493,7 @@ console.log("End");`}
               <div className="mt-8 flex justify-end">
                 <button
                   className="
-                    w-full sm:w-auto
+                    w-fit self-start sm:self-auto
                     rounded-xl
                     border border-[rgba(220,38,38,0.20)]
                     bg-[rgba(220,38,38,0.10)]
@@ -375,10 +505,14 @@ console.log("End");`}
                     hover:border-[rgba(220,38,38,0.30)]
                     hover:bg-[rgba(220,38,38,0.14)]
                   "
+                  onClick={handleMarkComplete}
                 >
                   Mark Complete
                 </button>
               </div>
+            </div>
+              )
+            }
             </div>
           </div>
         </div>

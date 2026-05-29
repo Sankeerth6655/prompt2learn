@@ -6,10 +6,7 @@ type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced'
 type roadmapRequest = {
     topic: string,
     difficulty: Difficulty,
-    subtopics:{
-        title:string,
-        description:string
-    }[],
+    subtopics:string[],
 }
 
 type roadmapResponse = {
@@ -54,10 +51,7 @@ type askQuestionRequest ={
 
 
 export async function generateTopicService(data:{topic:string,difficulty:string}):Promise<Array<{
-    subtopics:{
-        title:string,
-        description:string
-    }[]
+    subtopics:string[]
 }>>{
 
     const prompt = `Generate learning topics for:
@@ -67,10 +61,7 @@ export async function generateTopicService(data:{topic:string,difficulty:string}
         format :
         {
             subtopics:[
-                {
-                    "title":"string",
-                    "description":"string"
-                }
+                "string"
             ]
         }
         Do not return markdown.
@@ -79,7 +70,7 @@ export async function generateTopicService(data:{topic:string,difficulty:string}
         `;
 
     const response = await ai.models.generateContent({
-    model:'gemini-2.5-flash-lite',
+    model:'gemini-2.5-flash',
     contents:prompt
     });
 
@@ -98,7 +89,7 @@ export async function generateRoadmapService(data:roadmapRequest):Promise<roadma
     const prompt = `Generate roadmap for:
     topic: ${data.topic},
     difficulty: ${data.difficulty},
-    subtopics: ${data.subtopics.map((st)=>`- ${st.title}: ${st.description} `).join('\n')}
+    subtopics: ${data.subtopics.map((st)=>`- ${st} `).join('\n')}
     return in valid JSON only.
     format: {
         "estimatedDays": 0,
@@ -123,7 +114,7 @@ export async function generateRoadmapService(data:roadmapRequest):Promise<roadma
     `;
 
     const response = await ai.models.generateContent({
-        model:'gemini-2.5-flash-lite',
+        model:'gemini-2.5-flash',
         contents:prompt
     })
 
@@ -184,7 +175,7 @@ export async function generateContentService(data:generateContentRequest):Promis
     `;
 
     const response = await ai.models.generateContent({
-        model:'gemini-2.5-flash-lite',
+        model:'gemini-2.0-flash',
         contents:prompt
     })
 

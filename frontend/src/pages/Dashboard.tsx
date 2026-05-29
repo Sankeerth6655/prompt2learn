@@ -1,33 +1,49 @@
 import { ArrowRight, Plus } from "lucide-react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useGetRoadmapsQuery } from "../redux/features/roadmapApi";
 
 export default function Dashboard() {
-  const roadmaps =
-   [
-    {
-      id: 1,
-      topic: "Backend Developer",
-      progress: 65,
-      difficulty: "Intermediate",
-    },
-    {
-      id: 2,
-      topic: "MERN Stack Developer",
-      progress: 100,
-      difficulty: "Beginner",
-    },
-    {
-      id: 3,
-      topic: "Java Developer",
-      progress: 35,
-      difficulty: "Advanced",
-    },
-    {
-      id: 4,
-      topic: "DevOps Engineer",
-      progress: 20,
-      difficulty: "Beginner",
-    },
-  ];
+
+  const {data} = useGetRoadmapsQuery();
+
+  const totalRoadmaps = data?.length;
+  let completedRoadmaps = 0;
+  data?.map((r)=>{
+    if(r.status === 'COMPLETED') completedRoadmaps++;
+  })
+  const inProgressRoadmaps = totalRoadmaps! - completedRoadmaps;
+
+  const navigate = useNavigate();
+
+
+  // const roadmaps =
+  //  [
+  //   {
+  //     id: 1,
+  //     topic: "Backend Developer",
+  //     progress: 65,
+  //     difficulty: "Intermediate",
+  //   },
+  //   {
+  //     id: 2,
+  //     topic: "MERN Stack Developer",
+  //     progress: 100,
+  //     difficulty: "Beginner",
+  //   },
+  //   {
+  //     id: 3,
+  //     topic: "Java Developer",
+  //     progress: 35,
+  //     difficulty: "Advanced",
+  //   },
+  //   {
+  //     id: 4,
+  //     topic: "DevOps Engineer",
+  //     progress: 20,
+  //     difficulty: "Beginner",
+  //   },
+  // ];
+
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-[#D1D1D1]">
@@ -45,7 +61,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <button
+          <Link to='/create-roadmap'
             className="
               flex items-center justify-center gap-2
               rounded-xl
@@ -62,7 +78,7 @@ export default function Dashboard() {
           >
             <Plus size={16} />
             Create Roadmap
-          </button>
+          </Link>
         </div>
 
         {/* Stats */}
@@ -73,7 +89,7 @@ export default function Dashboard() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              4
+              {totalRoadmaps}
             </h2>
           </div>
 
@@ -83,7 +99,7 @@ export default function Dashboard() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              1
+              {completedRoadmaps}
             </h2>
           </div>
 
@@ -93,13 +109,13 @@ export default function Dashboard() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              3
+              {inProgressRoadmaps}
             </h2>
           </div>
         </div>
 
         {/* Roadmaps */}
-        {roadmaps.length === 0 ? (
+        {data?.length === 0 ? (
         <div
             className="
             mt-8
@@ -119,7 +135,7 @@ export default function Dashboard() {
             AI-generated content, progress tracking and guided concepts.
             </p>
 
-            <button
+            <Link to='/create-roadmap'
             className="
                 mt-6
                 inline-flex items-center gap-2
@@ -136,11 +152,11 @@ export default function Dashboard() {
             >
             <Plus size={16} />
             Create Your First Roadmap
-            </button>
+            </Link>
         </div>
         ) : (
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {roadmaps.map((roadmap) => (
+            {data?.map((roadmap) => (
             <div
                 key={roadmap.id}
                 className="
@@ -190,6 +206,7 @@ export default function Dashboard() {
                     transition-colors
                     hover:text-white
                     "
+                    onClick={()=>navigate(`/learning/${roadmap.id}`)}
                 >
                     <span
                     className="

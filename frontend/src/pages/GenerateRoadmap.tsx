@@ -4,6 +4,10 @@ import {
   X,
   ChevronDown,
 } from "lucide-react";
+import { useGenerateSubtopicsMutation, useGenerateRoadmapMutation } from "../redux/features/aiApi";
+import { toast } from "react-toastify";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useCreateRoadmapMutation } from "../redux/features/roadmapApi";
 
 type Difficulty =
   | "Beginner"
@@ -17,21 +21,30 @@ export default function GenerateRoadmap() {
   const [difficultyOpen, setDifficultyOpen] =
   useState(false);
 
-  const [subtopics, setSubtopics] = useState<
-    {
-      title: string;
-    }[]
-  >([]);
+  const [generateSubtopics,{isLoading:generatingSubtopics}] = useGenerateSubtopicsMutation();
+  const [generateRoadmap,{isLoading:generatingRoadmap}] = useGenerateRoadmapMutation();
+ 
+  const [subtopics, setSubtopics] = useState<string[]>([]);
 
-  // DEMO AI RESPONSE
-  function handleGenerateSubtopics() {
-    setSubtopics([
-      { title: "Node.js" },
-      { title: "Express.js" },
-      { title: "MongoDB" },
-      { title: "Authentication" },
-      { title: "REST APIs" },
-    ]);
+  const navigate = useNavigate();
+
+
+  async function handleGenerateSubtopics() {
+    try {
+      let response = await generateSubtopics({topic,difficulty}).unwrap();
+      setSubtopics(response.subtopics);
+    } catch (error:any) {
+      toast.error(error);
+    }
+  }
+
+  async function handleGenerateRoadmap(){
+    try {
+      let response = await generateRoadmap({topic,difficulty,subtopics}).unwrap();
+      navigate('/roadmap-preview',{ state:{roadmap:{topic,difficulty,...response}}});
+    } catch (error:any) {
+      console.log(error);
+    }
   }
 
   function updateSubtopic(
@@ -40,7 +53,7 @@ export default function GenerateRoadmap() {
   ) {
     const updated = [...subtopics];
 
-    updated[index].title = value;
+    updated[index] = value;
 
     setSubtopics(updated);
   }
@@ -54,9 +67,7 @@ export default function GenerateRoadmap() {
   function insertSubtopic(index: number) {
     const updated = [...subtopics];
 
-    updated.splice(index + 1, 0, {
-      title: "",
-    });
+    updated.splice(index + 1, 0, "");
 
     setSubtopics(updated);
   }
@@ -202,7 +213,29 @@ export default function GenerateRoadmap() {
             </div>
 
           {/* Generate Button */}
-          {subtopics.length === 0 && (
+          {generatingSubtopics && (
+            <button
+              disabled
+              className="
+                mt-6
+                rounded-xl
+                cursor-not-allowed 
+                opacity-60
+                border border-[rgba(220,38,38,0.20)]
+                bg-[rgba(220,38,38,0.10)]
+                px-5 py-2.5
+                text-sm
+                font-medium
+                text-[#D1D1D1]
+                transition-all
+                hover:border-[rgba(220,38,38,0.30)]
+                hover:bg-[rgba(220,38,38,0.14)]
+              "
+            >
+              Generating Subtopics...
+            </button>
+          )}
+          {!generatingSubtopics && subtopics?.length === 0 && (
             <button
               onClick={handleGenerateSubtopics}
               className="
@@ -224,11 +257,11 @@ export default function GenerateRoadmap() {
           )}
 
           {/* Subtopics */}
-          {subtopics.length > 0 && (
+          {subtopics?.length > 0 && (
             <>
               <div className="mt-8">
                 <h2 className="text-sm font-medium text-white">
-                  Generated Subtopics
+                  Subtopics
                 </h2>
 
                 <p className="mt-1 text-xs text-[#8A8A8A]">
@@ -238,14 +271,14 @@ export default function GenerateRoadmap() {
               </div>
 
               <div className="mt-4 space-y-3">
-                {subtopics.map(
+                {subtopics?.map(
                   (subtopic, index) => (
                     <div
                       key={index}
                       className="flex gap-2"
                     >
                       <input
-                        value={subtopic.title}
+                        value={subtopic}
                         onChange={(e) =>
                           updateSubtopic(
                             index,
@@ -307,7 +340,7 @@ export default function GenerateRoadmap() {
 
               {/* Final Button */}
               <div className="mt-6">
-                <button
+                {!generatingRoadmap && <button
                   className="
                     w-full sm:w-auto
                     rounded-xl
@@ -321,9 +354,31 @@ export default function GenerateRoadmap() {
                     hover:border-[rgba(220,38,38,0.30)]
                     hover:bg-[rgba(220,38,38,0.14)]
                   "
+                  onClick={handleGenerateRoadmap}
                 >
-                  Confirm & Generate Roadmap
-                </button>
+                  Generate Roadmap
+                </button>}
+                {generatingRoadmap && <button
+                  disabled
+                  className="
+                    w-full sm:w-auto
+                    rounded-xl
+                    border border-[rgba(220,38,38,0.20)]
+                    bg-[rgba(220,38,38,0.10)]
+                    px-5 py-2.5
+                    text-sm
+                    cursor-not-allowed 
+                    opacity-60
+                    font-medium
+                    text-[#D1D1D1]
+                    transition-all
+                    hover:border-[rgba(220,38,38,0.30)]
+                    hover:bg-[rgba(220,38,38,0.14)]
+                  "
+                  onClick={handleGenerateRoadmap}
+                >
+                  Generating Roadmap...
+                </button>}
               </div>
             </>
           )}
