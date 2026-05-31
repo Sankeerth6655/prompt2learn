@@ -1,5 +1,5 @@
 import { ArrowRight, Plus } from "lucide-react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useGetRoadmapsQuery } from "../redux/features/roadmapApi";
 
 export default function Dashboard() {
