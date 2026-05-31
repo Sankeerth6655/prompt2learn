@@ -6,8 +6,7 @@ import {
 } from "lucide-react";
 import { useGenerateSubtopicsMutation, useGenerateRoadmapMutation } from "../redux/features/aiApi";
 import { toast } from "react-toastify";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useCreateRoadmapMutation } from "../redux/features/roadmapApi";
+import { useNavigate } from "react-router-dom";
 
 type Difficulty =
   | "Beginner"

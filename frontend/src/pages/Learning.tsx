@@ -70,6 +70,7 @@ export default function Learning() {
     try {
       let response = await aiAsk({topic:data?.topic,subtopic:selectedSubtopic,difficulty:data?.difficulty,concept:selectedConcept,question:question}).unwrap();
       setAnswer(response.answer);
+      setQuestion("");
     } catch (error) {
       console.log(error);
     }
@@ -458,35 +459,41 @@ export default function Learning() {
                   </button>
                 </div>
 
-                {askAiLoading && !answer ? (
-                  <div
-                    className="
-                      mt-4
-                      rounded-xl
-                      border border-[#1A1A1C]
-                      bg-[#0D0D0F]
-                      p-4
-                    "
-                  >
-                    <p className="text-sm text-[#D1D1D1]">
-                      Loading...
-                    </p>
-                  </div>
-                ):(
-                  <div
-                    className="
-                      mt-4
-                      rounded-xl
-                      border border-[#1A1A1C]
-                      bg-[#0D0D0F]
-                      p-4
-                    "
-                  >
-                    <p className="text-sm text-[#D1D1D1]">
-                      {answer}
-                    </p>
-                  </div>
-                )}
+                {
+                  askAiLoading ? (
+
+                    <div
+                      className="
+                        mt-4
+                        rounded-xl
+                        border border-[#1A1A1C]
+                        bg-[#0D0D0F]
+                        p-4
+                      "
+                    >
+                      <p className="text-sm text-[#D1D1D1]">
+                        Loading...
+                      </p>
+                    </div>
+
+                  ) : answer ? (
+
+                    <div
+                      className="
+                        mt-4
+                        rounded-xl
+                        border border-[#1A1A1C]
+                        bg-[#0D0D0F]
+                        p-4
+                      "
+                    >
+                      <p className="text-sm text-[#D1D1D1]">
+                        {answer}
+                      </p>
+                    </div>
+
+                  ) : null
+                }
               </section>
 
               {/* Complete */}

@@ -69,6 +69,7 @@ export default function Navbar() {
           
             <Link to ='/' className="text-sm text-[#D1D1D1] transition-colors hover:text-white">Home</Link>
             { isAuthenticated && <Link to='/dashboard' className="text-sm text-[#D1D1D1] transition-colors hover:text-white">Dashboard</Link>}
+            { isAuthenticated && <Link to='/chat-roadmap' className="text-sm text-[#D1D1D1] transition-colors hover:text-white">Prompt Guide</Link>}
           
         </div>
 
