@@ -248,7 +248,7 @@ export default function Navbar() {
               </div>
 
               <div className="p-2">
-                  <button
+                  <Link to='/'
                     className="
                       flex w-full items-center
                       rounded-xl
@@ -261,8 +261,8 @@ export default function Navbar() {
                     "
                   >
                     Home
-                  </button>
-                  <button
+                  </Link>
+                  {isAuthenticated && <Link to='/dashboard'
                     className="
                       flex w-full items-center
                       rounded-xl
@@ -275,7 +275,21 @@ export default function Navbar() {
                     "
                   >
                     Dashboard
-                  </button>
+                  </Link>}
+                  {isAuthenticated && <Link to='/chat-roadmap'
+                    className="
+                      flex w-full items-center
+                      rounded-xl
+                      px-3 py-2.5
+                      text-left text-sm
+                      text-[#D1D1D1]
+                      transition-all
+                      hover:bg-[rgba(220,38,38,0.08)]
+                      hover:text-white
+                    "
+                  >
+                    Prompt Guide
+                  </Link>}
               </div>
 
               <div className="border-t border-[#1A1A1C] p-2">

@@ -24,7 +24,7 @@ export default function Auth() {
     if(isLogin){
       try {
         const response = await login({email,password}).unwrap();
-        toast.success(response.message);
+        // toast.success(response.message);
         localStorage.setItem("token",response.token);
         dispatch(authApi.util.resetApiState());
         navigate('/');
@@ -35,8 +35,8 @@ export default function Auth() {
 
     else{
       try {
-        const response = await register({name,email,password}).unwrap();
-        toast.success(response.message);
+        await register({name,email,password}).unwrap();
+        // toast.success(response.message);
         setIsLogin(!isLogin);
       } catch (error) {
         toast.error("Error in register form");
